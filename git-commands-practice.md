@@ -1,225 +1,272 @@
-# Git Commands Practice (with examples)
+# Git Commands Practice (catalog + examples)
 
-This file is meant to be a hands-on practice sheet. Run these commands inside this repo.
+This file is a hands-on Git practice catalog. Run these commands inside this repo.
 
-Notes:
+Conventions:
 
-- Anything in `<...>` is a placeholder you should replace.
-- Many commands are safe to run repeatedly; commands that rewrite history are clearly marked.
+- Replace `<...>` placeholders.
+- `origin` means your remote name.
+- Commands marked **(rewrites history)** can break shared branches.
 
 ---
 
-## 0) Setup & Help
+## A) How to find “all possible Git commands”
+
+Git has many subcommands (porcelain + plumbing). To list what your installed Git supports:
 
 ```bash
-git --version
-git help
+git help -a        # list *all* available subcommands on your machine
+git help -g        # list Git concept guides (glossary, revisions, workflows)
+```
+
+To read documentation:
+
+```bash
 git help <command>
 git <command> -h
 ```
 
-### Configure identity
+Important docs to understand examples:
 
 ```bash
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
-git config --list
-```
-
-### Useful config (optional)
-
-```bash
-git config --global init.defaultBranch main
-git config --global core.autocrlf true   # common on Windows
-git config --global pull.rebase false
+git help revisions
+git help gitrevisions
+git help glossary
 ```
 
 ---
 
-## 1) Create / Clone Repos
+## 0) Setup & Config
 
-### Initialize a repo
+```bash
+git --version
+git config --list
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+Common config:
+
+```bash
+git config --global init.defaultBranch main
+git config --global core.autocrlf true       # common on Windows
+git config --global fetch.prune true
+git config --global pull.rebase false
+```
+
+Aliases:
+
+```bash
+git config --global alias.st status
+git st
+```
+
+---
+
+## 1) Create, Clone, Inspect Repo
 
 ```bash
 git init
-```
-
-### Clone
-
-```bash
+git init --bare
 git clone <url>
 git clone <url> <folder>
 ```
 
----
-
-## 2) Working Directory Basics
-
-### Check status
+Inspect repository state:
 
 ```bash
-git status
 git status -sb
-```
-
-### See history
-
-```bash
-git log
 git log --oneline --graph --decorate --all
-git log -p
-```
-
-### See changes
-
-```bash
-git diff            # unstaged
-git diff --staged   # staged
-git diff <commit1> <commit2>
+git show <commit>
+git show <commit>:<path>
 ```
 
 ---
 
-## 3) Add / Commit
+## 2) Files: Add, Move, Remove
 
-### Stage
+Stage files:
 
 ```bash
 git add <file>
 git add .
-git add -p          # stage interactively
+git add -p          # interactive staging
 ```
 
-### Unstage
+Move/rename (records rename in index):
 
 ```bash
-git restore --staged <file>
+git mv old.txt new.txt
 ```
 
-### Commit
+Remove:
 
 ```bash
-git commit -m "message"
-git commit
-git commit --amend
+git rm <file>               # remove from working tree + index
+git rm --cached <file>      # keep file, untrack it
 ```
 
-### Create a file quickly (Windows examples)
+Windows quick file creation:
 
 ```bat
 echo hello> hello.txt
 ```
 
-Practice:
+---
 
-1. Create `hello.txt`, stage it, commit it.
-2. Modify it twice; use `git add -p` to stage only one hunk.
+## 3) Commit & History Editing
+
+Commit:
+
+```bash
+git commit -m "message"
+git commit
+git commit -a -m "commit tracked changes"
+```
+
+Amend last commit:
+
+```bash
+git commit --amend
+git commit --amend --no-edit
+```
+
+Pick commits by message/author:
+
+```bash
+git log --author="Alice"
+git log --grep="fix"
+```
 
 ---
 
-## 4) Undo / Restore (safe-ish)
+## 4) Diff (your best debugging tool)
 
-### Discard local unstaged changes
+```bash
+git diff
+git diff --staged
+git diff <commit1> <commit2>
+git diff <commit> -- <path>
+```
+
+Word diff:
+
+```bash
+git diff --word-diff
+```
+
+---
+
+## 5) Undo / Restore / Reset
+
+Discard local unstaged edits:
 
 ```bash
 git restore <file>
 git restore .
 ```
 
-### Restore a file from a specific commit
+Unstage:
+
+```bash
+git restore --staged <file>
+```
+
+Restore a file from a commit:
 
 ```bash
 git restore --source <commit> -- <file>
 ```
 
-### Reset (moves branch pointer)
-
-```bash
-git reset --soft <commit>   # keep changes staged
-git reset --mixed <commit>  # keep changes unstaged (default)
-git reset --hard <commit>   # DANGEROUS: discards local changes
-```
-
-### Revert (safe for shared history)
+Revert (safe on shared branches):
 
 ```bash
 git revert <commit>
+git revert <oldest_commit>^..<newest_commit>
+```
+
+Reset (**rewrites history** on current branch):
+
+```bash
+git reset --soft <commit>
+git reset --mixed <commit>
+git reset --hard <commit>     # DANGEROUS: discards worktree changes
+```
+
+Recover “lost” commits:
+
+```bash
+git reflog
+git reset --hard <reflog_sha>
 ```
 
 ---
 
-## 5) Branching
-
-### List / create / switch
+## 6) Branches & Switching
 
 ```bash
 git branch
 git branch -vv
-git branch <name>
-git switch <name>
-git switch -c <name>
+git switch <branch>
+git switch -c <new-branch>
 ```
 
-### Rename / delete
+Rename/delete:
 
 ```bash
 git branch -m <old> <new>
-git branch -d <name>
-git branch -D <name>  # force
+git branch -d <branch>
+git branch -D <branch>
 ```
 
-Practice:
+Legacy switching (still exists):
 
-1. Create a branch `feature/a`.
-2. Make a commit on it.
-3. Switch back to `main`.
+```bash
+git checkout <branch>
+git checkout -b <new-branch>
+```
 
 ---
 
-## 6) Merge & Rebase
+## 7) Merge, Rebase, Cherry-pick
 
-### Merge
+Merge:
 
 ```bash
 git merge <branch>
 git merge --no-ff <branch>
-```
-
-### Resolve conflicts
-
-```bash
-git status
-git add <resolved-files>
-git commit
-```
-
-### Abort merge
-
-```bash
 git merge --abort
 ```
 
-### Rebase (rewrites history)
+Rebase (**rewrites history**):
 
 ```bash
 git rebase <upstream>
+git rebase -i <base>
 git rebase --continue
 git rebase --abort
-git rebase -i <base>
+```
+
+Cherry-pick:
+
+```bash
+git cherry-pick <commit>
+git cherry-pick <a>..<b>
+git cherry-pick --abort
 ```
 
 ---
 
-## 7) Remotes
+## 8) Remotes: fetch / pull / push
 
-### Inspect
+Inspect:
 
 ```bash
 git remote -v
 git remote show origin
 ```
 
-### Add / change / remove
+Manage:
 
 ```bash
 git remote add origin <url>
@@ -228,21 +275,33 @@ git remote rename origin upstream
 git remote remove <name>
 ```
 
-### Fetch / pull / push
+Fetch:
 
 ```bash
 git fetch
 git fetch --all --prune
+git fetch origin <branch>
+```
+
+Pull:
+
+```bash
 git pull
 git pull --rebase
+```
+
+Push:
+
+```bash
 git push
 git push -u origin <branch>
+git push --tags
 git push --force-with-lease   # safer force
 ```
 
 ---
 
-## 8) Tags
+## 9) Tags
 
 ```bash
 git tag
@@ -256,13 +315,13 @@ git tag -d v1.0.0
 
 ---
 
-## 9) Stash
+## 10) Stash
 
 ```bash
 git stash
 git stash -u
 git stash list
-git stash show -p
+git stash show -p stash@{0}
 git stash pop
 git stash apply stash@{0}
 git stash drop stash@{0}
@@ -271,43 +330,40 @@ git stash clear
 
 ---
 
-## 10) Inspect & Pick Changes
+## 11) Search & Inspect
 
-### Blame
+Blame:
 
 ```bash
 git blame <file>
+git blame -L 10,40 <file>
 ```
 
-### Show commit / object
+Search tracked content:
 
 ```bash
-git show <commit>
-git show <commit>:<path>
+git grep "TODO"
+git grep -n "function" -- <path>
 ```
 
-### Cherry-pick
+Show references:
 
 ```bash
-git cherry-pick <commit>
-git cherry-pick --abort
+git show-ref
+git for-each-ref --format="%(refname:short) %(objectname:short)" refs/heads
 ```
 
-### Bisect
+Describe a commit (useful with tags):
 
 ```bash
-git bisect start
-git bisect bad
-git bisect good <commit>
-git bisect run <command>
-git bisect reset
+git describe --tags --always
 ```
 
 ---
 
-## 11) .gitignore
+## 12) Ignore & Clean
 
-Create a `.gitignore` file and add patterns like:
+Create `.gitignore`:
 
 ```gitignore
 node_modules/
@@ -316,24 +372,59 @@ dist/
 .env
 ```
 
-If a file is already tracked, ignoring it won’t remove it:
+If already tracked:
 
 ```bash
 git rm --cached <file>
 ```
 
----
-
-## 12) Clean up untracked files
+Delete untracked stuff (be careful):
 
 ```bash
-git clean -n      # preview
-git clean -fd     # delete untracked files/dirs
+git clean -n
+git clean -fd
 ```
 
 ---
 
-## 13) Submodules (optional)
+## 13) Patches (apply/send changes without merging)
+
+Create patches:
+
+```bash
+git format-patch -1 <commit>
+git format-patch <base>..HEAD
+```
+
+Apply patches:
+
+```bash
+git apply <patchfile>
+git am <patchfile>           # applies and creates commits
+git am --abort
+```
+
+---
+
+## 14) Archive & Bundle
+
+Create a zip/tar of repo content at a commit:
+
+```bash
+git archive -o source.zip HEAD
+git archive -o source.zip <tag>
+```
+
+Bundle (offline transfer of a repo):
+
+```bash
+git bundle create repo.bundle --all
+git clone repo.bundle <folder>
+```
+
+---
+
+## 15) Submodules (optional)
 
 ```bash
 git submodule add <url> <path>
@@ -343,24 +434,56 @@ git submodule foreach git pull
 
 ---
 
-## 14) Advanced / Plumbing (practice only)
-
-These are less common day-to-day but good to know.
+## 16) Worktrees (multiple working folders for one repo)
 
 ```bash
-git reflog
-git fsck
-git gc
-git cat-file -p <object>
-git rev-parse HEAD
-git show-ref
+git worktree list
+git worktree add ..\wt-feature feature/a
+git worktree remove ..\wt-feature
 ```
 
 ---
 
-## 15) Mini Practice Scenarios
+## 17) Troubleshooting & Maintenance
 
-### Scenario A: Typical feature work
+Find the commit that introduced a bug:
+
+```bash
+git bisect start
+git bisect bad
+git bisect good <commit>
+git bisect run <command>
+git bisect reset
+```
+
+Repair/cleanup:
+
+```bash
+git fsck
+git gc
+git maintenance run
+```
+
+---
+
+## 18) Plumbing (advanced) — examples you can actually run
+
+These are lower-level building blocks. You rarely need them, but they explain how Git works.
+
+```bash
+git rev-parse HEAD
+git cat-file -t HEAD
+git cat-file -p HEAD
+git ls-tree HEAD
+git hash-object -w <file>
+git show-index < .git/index
+```
+
+---
+
+## 19) Practice Scenarios (guided)
+
+### Scenario A: Basic feature work
 
 ```bash
 git switch -c feature/login
@@ -371,16 +494,23 @@ git switch main
 git merge feature/login
 ```
 
-### Scenario B: Undo a bad commit (shared history)
+### Scenario B: Create and resolve a conflict
+
+1. Create two branches from `main`.
+2. Edit the same line in the same file in both branches.
+3. Merge one branch into the other and resolve.
+
+Useful commands during conflict:
 
 ```bash
-git log --oneline
-git revert <bad_commit_sha>
+git status
+git diff
+git add <resolved-files>
+git commit
 ```
 
-### Scenario C: Lost a commit? Use reflog
+### Scenario C: Rewrite local history (ONLY if not pushed)
 
 ```bash
-git reflog
-git reset --hard <reflog_sha>
+git rebase -i HEAD~3
 ```
