@@ -1,4 +1,25 @@
-K:\git-practice>git config --global user.name "kovendhan5"
+# Git Practice Workspace
+
+This repo is for practicing common Git commands locally.
+
+## Files
+
+- See `git-commands-practice.md` for commands + examples + exercises.
+
+## Quick start
+
+```bash
+git status
+git log --oneline --graph --decorate --all
+```
+
+## Suggested practice loop
+
+1. Create/edit a file.
+2. `git add -p`
+3. `git commit -m "..."`
+4. Create a branch, merge it, and resolve a conflict once.
+   K:\git-practice>git config --global user.name "kovendhan5"
 
 K:\git-practice>git config --global user.email "kovendhanofficial5@gmail.com"
 
